@@ -4,4 +4,4 @@ services:
     env: node
     region: oregon # Região do servidor (escolha a mais próxima do seu público)
     buildCommand: npm install
-    startCommand: node server.js
+    startCommand: node server.ts
