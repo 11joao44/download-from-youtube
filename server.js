@@ -16,11 +16,13 @@ fastify.register(fastifyStatic, {
   prefix: '/', // Define o caminho base para os arquivos estáticos
 });
 
+// Porta padrão para Render (ou 3000 para desenvolvimento local)
+const PORT = process.env.PORT || 3000;
+
 // Iniciar o servidor
 const start = async () => {
   try {
-    await fastify.listen({ port: 3000 });
-    console.log('Servidor rodando em http://localhost:3000');
+    await fastify.listen({ port: PORT, host: '0.0.0.0' }); // Use host '0.0.0.0' para expor externamente
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);
