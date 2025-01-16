@@ -5,7 +5,12 @@ import fastifyCors from "@fastify/cors";
 import { validatorCompiler, serializerCompiler, ZodTypeProvider, jsonSchemaTransform } from "fastify-type-provider-zod";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
-import downloadRoutes from "./routes/download";
+import { fileURLToPath } from "url";
+import downloadRoutes from "./routes/download.js";
+
+// Substituto para __dirname em ESModules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = fastify({ logger: true }).withTypeProvider<ZodTypeProvider>();
 

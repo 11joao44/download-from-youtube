@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Aplicação para download de vídeos do YouTube",
-  "main": "server.ts",
+  "main": "dist/server.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/server.ts"
+    "start": "node dist/server.js"
   },
   "keywords": [],
   "author": "",
@@ -22,7 +22,6 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.7",
-    "ts-node": "^10.9.2",
     "typescript": "^5.7.3"
   }
 }
