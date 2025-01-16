@@ -5,7 +5,7 @@
   "description": "Aplicação para download de vídeos do YouTube",
   "main": "dist/server.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && chmod +x ./bin/yt-dlp.exe",
     "start": "node dist/server.js"
   },
   "keywords": [],
