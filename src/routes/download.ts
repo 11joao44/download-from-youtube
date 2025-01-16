@@ -18,7 +18,7 @@ export default async function downloadRoutes(fastify: FastifyInstance): Promise<
     }
 
     try {
-      const ytDlpPath = path.resolve('./bin/yt-dlp.exe');
+      const ytDlpPath = path.resolve('./bin/yt-dlp');
       const args = ['-o', '-', url];
       if (format) {
         args.splice(2, 0, '-f', format);
