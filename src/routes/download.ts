@@ -1,8 +1,16 @@
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { spawn } from 'child_process';
 import path from 'path';
 
-export default async function downloadRoutes(fastify) {
-  fastify.get('/download', async (request, reply) => {
+// Definir o tipo para os parâmetros da rota
+interface DownloadQuery {
+  url: string;
+  format?: string;
+}
+
+// Função principal com tipagem explícita
+export default async function downloadRoutes(fastify: FastifyInstance): Promise<void> {
+  fastify.get('/download', async (request: FastifyRequest<{ Querystring: DownloadQuery }>, reply: FastifyReply) => {
     const { url, format } = request.query;
 
     if (!url) {

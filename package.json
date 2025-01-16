@@ -5,7 +5,8 @@
   "description": "Aplicação para download de vídeos do YouTube",
   "main": "server.ts",
   "scripts": {
-    "start": "node server.ts"
+    "build": "tsc",
+    "start": "node dist/server.js"
   },
   "keywords": [],
   "author": "",
@@ -18,5 +19,10 @@
     "fastify": "^5.2.1",
     "fastify-type-provider-zod": "^4.0.2",
     "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
   }
 }
