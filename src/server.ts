@@ -1,6 +1,7 @@
 import fastify from "fastify";
 import fastifyStatic from "@fastify/static";
 import path from "path";
+import rateLimit from "@fastify/rate-limit";
 import fastifyCors from "@fastify/cors";
 import { validatorCompiler, serializerCompiler, ZodTypeProvider, jsonSchemaTransform } from "fastify-type-provider-zod";
 import fastifySwagger from "@fastify/swagger";
@@ -42,9 +43,14 @@ app.register(fastifyStatic, {
     prefix: "/static/", // Prefixo para acessar os arquivos estáticos
 });
 
+app.register(rateLimit, {
+    max: 100, // Máximo de 100 requisições
+    timeWindow: '1 minute' // Por minuto
+});
+
 // Rota principal
 app.get("/", async (request, reply) => {
-    reply.send({ message: "Servidor funcionando! Use /download para baixar vídeos." });
+    return reply.sendFile("index.html");
 });
 
 // Registrar as rotas
