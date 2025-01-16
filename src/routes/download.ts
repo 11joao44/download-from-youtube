@@ -62,4 +62,9 @@ export default async function downloadRoutes(fastify: FastifyInstance): Promise<
       reply.code(500).send({ error: 'Erro interno ao processar o download.' });
     }
   });
+
+  fastify.get("/", async (request, reply) => {
+    reply.send({ message: "Servidor funcionando! Use /download para baixar vídeos." });
+  });
+  
 }

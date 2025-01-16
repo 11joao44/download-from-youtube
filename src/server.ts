@@ -42,6 +42,11 @@ app.register(fastifyStatic, {
     prefix: "/static/", // Prefixo para acessar os arquivos estáticos
 });
 
+// Rota principal
+app.get("/", async (request, reply) => {
+    reply.send({ message: "Servidor funcionando! Use /download para baixar vídeos." });
+});
+
 // Registrar as rotas
 app.register(downloadRoutes);
 
