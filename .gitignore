@@ -2,3 +2,4 @@ dist/
 node_modules/
 bin/yt-dlp_win.exe
 bin/ffmpeg.exe
+cookies.txt
