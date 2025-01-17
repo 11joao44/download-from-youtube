@@ -34,7 +34,8 @@ export default async function downloadRoutes(fastify: FastifyInstance): Promise<
       // Escrever os cookies no arquivo temporário
       fs.writeFileSync(cookiesPath, cookies, "utf8");
   
-      const args = ["--cookies", cookiesPath, "-o", "-", url];
+      const cookiePath = path.resolve('./cookies.txt');
+      const args = ['--no-playlist', '--cookies', cookiePath, '-o', '-', url];
       if (format) {
         args.splice(4, 0, "-f", format);
       }
