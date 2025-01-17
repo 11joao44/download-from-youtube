@@ -47,6 +47,14 @@ export default async function downloadRoutes(fastify: FastifyInstance): Promise<
       ];
       if (format) {
         args.splice(7, 0, "-f", format);
+        args.push("--extractor-args", `youtube:visitor_data=${process.env.YOUTUBE_VISITOR_DATA}`);
+        args.push(
+          "--user-agent",
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101 Firefox/102.0"
+        );
+        
+        // args.push("--proxy", "http://proxy-endereco:porta");
+
       }
   
       const processyt = spawn(ytDlpPath, args);
