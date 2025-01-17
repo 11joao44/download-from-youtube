@@ -37,8 +37,9 @@ export default async function downloadRoutes(fastify: FastifyInstance): Promise<
       const cookiePath = path.resolve('./cookies.txt');
       const args = ['--no-playlist', '--cookies', cookiePath, '-o', '-', url];
       if (format) {
-        args.splice(4, 0, "-f", format);
+        args.push('-f', format); // Adicione o formato apenas após o argumento principal
       }
+      
   
       const processyt = spawn(ytDlpPath, args);
   
