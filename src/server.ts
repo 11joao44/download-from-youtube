@@ -3,7 +3,12 @@ import fastifyStatic from "@fastify/static";
 import path from "path";
 import rateLimit from "@fastify/rate-limit";
 import fastifyCors from "@fastify/cors";
-import { validatorCompiler, serializerCompiler, ZodTypeProvider, jsonSchemaTransform } from "fastify-type-provider-zod";
+import {
+  validatorCompiler,
+  serializerCompiler,
+  ZodTypeProvider,
+  jsonSchemaTransform,
+} from "fastify-type-provider-zod";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import { fileURLToPath } from "url";
@@ -24,49 +29,49 @@ app.register(fastifyCors, { origin: "*" });
 
 // Configurar documentação Swagger
 app.register(fastifySwagger, {
-    openapi: {
-        info: {
-            title: "API Home",
-            version: "1.0.0",
-        },
+  openapi: {
+    info: {
+      title: "API Home",
+      version: "1.0.0",
     },
-    transform: jsonSchemaTransform,
+  },
+  transform: jsonSchemaTransform,
 });
 
 app.register(fastifySwaggerUi, {
-    routePrefix: "/docs",
+  routePrefix: "/docs",
 });
 
 // Registrar o plugin de arquivos estáticos
 app.register(fastifyStatic, {
-    root: path.join(__dirname, "../public"),
-    prefix: "/static/", // Prefixo para acessar os arquivos estáticos
+  root: path.join(__dirname, "../public"),
+  prefix: "/static/", // Prefixo para acessar os arquivos estáticos
 });
 
 app.register(rateLimit, {
-    max: 100, // Máximo de 100 requisições
-    timeWindow: '1 minute' // Por minuto
+  max: 100, // Máximo de 100 requisições
+  timeWindow: "1 minute", // Por minuto
 });
 
-// Rota principal
+// Rota principal para servir o index.html
 app.get("/", async (request, reply) => {
-    return reply.sendFile("index.html");
+  return reply.sendFile("index.html");
 });
 
-// Registrar as rotas
+// Registrar as rotas de download
 app.register(downloadRoutes);
 
-// Porta e host dinâmicos
+// Definir porta (pode ser configurada via variável de ambiente)
 const PORT = process.env.PORT || 8888;
 
 const start = async () => {
-    try {
-        await app.listen({ port: Number(PORT), host: "0.0.0.0" });
-        console.log(`Servidor rodando na porta ${PORT}`);
-    } catch (err) {
-        app.log.error(err);
-        process.exit(1);
-    }
+  try {
+    await app.listen({ port: Number(PORT), host: "0.0.0.0" });
+    console.log(`Servidor rodando na porta ${PORT}`);
+  } catch (err) {
+    app.log.error(err);
+    process.exit(1);
+  }
 };
 
 start();
