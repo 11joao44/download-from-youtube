@@ -41,8 +41,28 @@ export default async function downloadRoutes(
         const args = [
           "--no-playlist",
           "--user-agent",
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101 Firefox/102.0",
-        ];
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+          "--referer",
+          "https://www.youtube.com/",
+          "--add-header",
+          "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+          "--add-header",
+          "Accept-Language: en-US,en;q=0.9",
+          "--add-header",
+          "Accept-Encoding: gzip, deflate, br",
+          "--add-header",
+          "Connection: keep-alive",
+          "--add-header",
+          "Upgrade-Insecure-Requests: 1",
+          "--add-header",
+          "Sec-Fetch-Site: same-origin",
+          "--add-header",
+          "Sec-Fetch-Mode: navigate",
+          "--add-header",
+          "Sec-Fetch-User: ?1",
+          "--add-header",
+          "Sec-Fetch-Dest: document",
+        ];        
 
         if (format) {
           if (format.toLowerCase() === "mp3") {
