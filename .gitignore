@@ -1,5 +1,5 @@
 dist/
 node_modules/
-bin/yt-dlp_win.exe
+bin/yt-dlp.exe
 bin/ffmpeg.exe
 cookies.txt
