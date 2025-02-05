@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { spawn } from "child_process";
 import path from "path";
 import fs from "fs";
+import os from "os";
 
 // Definir o tipo para os parâmetros da rota
 interface DownloadQuery {
@@ -27,8 +28,9 @@ export default async function downloadRoutes(
       }
 
       try {
-        // Define o nome do executável conforme o sistema operacional
-        const executableName = process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp";
+        // Define o nome do executável de acordo com o sistema operacional
+        const executableName =
+          process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp";
         const ytDlpPath = path.join(process.cwd(), "bin", executableName);
 
         if (!fs.existsSync(ytDlpPath)) {
@@ -37,37 +39,37 @@ export default async function downloadRoutes(
             .send({ error: `${executableName} não encontrado no diretório bin.` });
         }
 
-        // Monta os argumentos para o yt-dlp
+        // Inicia a montagem dos argumentos para o yt-dlp
         const args = [
           "--no-playlist",
           "--user-agent",
+          // User-Agent do Chrome 114 em Windows 10
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
           "--referer",
           "https://www.youtube.com/",
-          "--add-header",
-          "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-          "--add-header",
-          "Accept-Language: en-US,en;q=0.9",
-          "--add-header",
-          "Accept-Encoding: gzip, deflate, br",
-          "--add-header",
-          "Connection: keep-alive",
-          "--add-header",
-          "Upgrade-Insecure-Requests: 1",
-          "--add-header",
-          "Sec-Fetch-Site: same-origin",
-          "--add-header",
-          "Sec-Fetch-Mode: navigate",
-          "--add-header",
-          "Sec-Fetch-User: ?1",
-          "--add-header",
-          "Sec-Fetch-Dest: document",
-        ];        
+        ];
 
+        // Se a variável de ambiente YOUTUBE_COOKIES estiver definida, use os cookies
+        let cookieFilePath: string | null = null;
+        if (process.env.YOUTUBE_COOKIES) {
+          // Cria um arquivo temporário para os cookies
+          cookieFilePath = path.join(os.tmpdir(), `cookies_${Date.now()}.txt`);
+          try {
+            fs.writeFileSync(cookieFilePath, process.env.YOUTUBE_COOKIES, "utf8");
+            console.log(`Arquivo de cookies criado em: ${cookieFilePath}`);
+            args.push("--cookies", cookieFilePath);
+          } catch (err) {
+            console.error("Erro ao criar arquivo de cookies:", err);
+            return reply.code(500).send({ error: "Erro ao criar arquivo de cookies." });
+          }
+        } else {
+          console.warn("YOUTUBE_COOKIES não está definida. Sem cookies, o acesso pode ser bloqueado.");
+        }
+
+        // Trata a seleção do formato solicitado
         if (format) {
           if (format.toLowerCase() === "mp3") {
-            // Se o formato solicitado for mp3, extrai o áudio e converte para mp3
-            // IMPORTANTE: certifique-se de que o ffmpeg esteja instalado e acessível no PATH
+            // Extrai o áudio e converte para mp3 (ffmpeg precisa estar instalado no PATH)
             args.push("-x", "--audio-format", "mp3");
           } else {
             args.push("-f", format);
@@ -81,7 +83,6 @@ export default async function downloadRoutes(
         const ytDlpProcess = spawn(ytDlpPath, args);
 
         // Define os cabeçalhos para download (ajuste o Content-Type se necessário)
-        // Quando o áudio for extraído para mp3, o Content-Type permanece "video/mp4" ou você pode alterar para "audio/mpeg"
         const contentType = format?.toLowerCase() === "mp3" ? "audio/mpeg" : "video/mp4";
         reply.raw.writeHead(200, {
           "Content-Disposition": `attachment; filename="video.${format || "mp4"}"`,
@@ -90,7 +91,6 @@ export default async function downloadRoutes(
 
         let hasData = false;
 
-        // Encaminha a saída padrão do yt-dlp para a resposta
         ytDlpProcess.stdout.on("data", (chunk) => {
           if (chunk.length > 0) {
             hasData = true;
@@ -100,13 +100,19 @@ export default async function downloadRoutes(
           }
         });
 
-        // Loga a saída de erro do yt-dlp
         ytDlpProcess.stderr.on("data", (data) => {
           console.error(`[yt-dlp error]: ${data.toString()}`);
         });
 
-        // Quando o processo for finalizado, encerra a resposta
         ytDlpProcess.on("close", (code) => {
+          // Remove o arquivo temporário de cookies, se criado
+          if (cookieFilePath) {
+            fs.unlink(cookieFilePath, (err) => {
+              if (err) console.error("Erro ao remover arquivo de cookies:", err);
+              else console.log(`Arquivo de cookies ${cookieFilePath} removido.`);
+            });
+          }
+
           if (code !== 0 || !hasData) {
             console.error(`Processo yt-dlp finalizado com código ${code} ou sem dados.`);
             if (!reply.raw.headersSent) {
@@ -118,7 +124,6 @@ export default async function downloadRoutes(
           }
         });
 
-        // Trata erros no processo do yt-dlp
         ytDlpProcess.on("error", (err) => {
           console.error("Erro no processo yt-dlp:", err);
           if (!reply.raw.headersSent) {
