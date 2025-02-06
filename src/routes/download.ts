@@ -81,7 +81,7 @@ export default async function downloadRoutes(
         // Função para converter cookies para o formato Netscape
         function convertToNetscapeFormat(cookies: string[]): string {
           let netscapeFormat = "# Netscape HTTP Cookie File\n# This is a generated file! Do not edit.\n";
-          
+          console.log('Cookies coletados', cookies);
           cookies.forEach((cookie: string) => {
             const cookieParts = cookie.split(';');
             const cookieDetails = cookieParts[0].split('=');
@@ -95,6 +95,8 @@ export default async function downloadRoutes(
         
             netscapeFormat += `${domain}\tTRUE\t${path}\tTRUE\t${expiry}\t${name}\t${value}\n`;
           });
+
+          console.log("Cookies no formato Netscape:\n", netscapeFormat); // Verifique o conteúdo aqui
         
           return netscapeFormat;
         }
