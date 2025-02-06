@@ -78,7 +78,7 @@ export default async function downloadRoutes(
           }
         }
         
-        function convertToNetscapeFormat(content) {
+        function convertToNetscapeFormat(content: string[]): string  {
           const cookies = content.split('\n');
         
           console.log('# Netscape HTTP Cookie File');
@@ -96,7 +96,7 @@ export default async function downloadRoutes(
             let httpOnly = 'FALSE';
             
             // Para cada parte restante (atributos como Domain, Path, Expires, etc.)
-            parts.forEach(part => {
+            parts.forEach((part: string) => {
               if (part.trim().startsWith('Domain=')) {
                 domain = part.split('=')[1].trim();
               } else if (part.trim().startsWith('Path=')) {
