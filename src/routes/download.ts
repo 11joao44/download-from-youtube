@@ -78,28 +78,56 @@ export default async function downloadRoutes(
           }
         }
         
-        // Função para converter cookies para o formato Netscape
-        function convertToNetscapeFormat(cookies: string[]): string {
-          let netscapeFormat = "# Netscape HTTP Cookie File\n# This is a generated file! Do not edit.\n";
-          console.log('Cookies coletados', cookies);
-          cookies.forEach((cookie: string) => {
-            const cookieParts = cookie.split(';');
-            const cookieDetails = cookieParts[0].split('=');
+        function convertToNetscapeFormat(content) {
+          const cookies = content.split('\n');
+        
+          console.log('# Netscape HTTP Cookie File');
+          
+          for (const cookie of cookies) {
+            // A primeira parte do cookie será sempre no formato "name=value"
+            const parts = cookie.split(';');
             
-            // Definindo a estrutura: domain, path, expiry, name, value
-            const domain = cookieDetails[0].replace(/^[.]+/, ''); // Remove o ponto inicial do domínio
-            const path = '/'; // Caminho padrão
-            const expiry = Date.now() + 365 * 24 * 60 * 60 * 1000; // Definindo uma expiração para 1 ano
-            const name = cookieDetails[0];
-            const value = cookieDetails[1] || '';
+            let [name, value] = parts[0].split('=');
+            if (!name) continue;
         
-            netscapeFormat += `${domain}\tTRUE\t${path}\tTRUE\t${expiry}\t${name}\t${value}\n`;
-          });
-
-          console.log("Cookies no formato Netscape:\n", netscapeFormat); // Verifique o conteúdo aqui
+            let domain = '';
+            let path = '/';
+            let expiration = 'Session'; // Caso não tenha expirado, usamos "Session"
+            let httpOnly = 'FALSE';
+            
+            // Para cada parte restante (atributos como Domain, Path, Expires, etc.)
+            parts.forEach(part => {
+              if (part.trim().startsWith('Domain=')) {
+                domain = part.split('=')[1].trim();
+              } else if (part.trim().startsWith('Path=')) {
+                path = part.split('=')[1].trim();
+              } else if (part.trim().startsWith('Expires=')) {
+                expiration = part.split('=')[1].trim();
+              } else if (part.trim().startsWith('HttpOnly')) {
+                httpOnly = 'TRUE';
+              }
+            });
         
-          return netscapeFormat;
+            // Garantir que o domínio começa com um ponto
+            if (domain.charAt(0) !== '.') {
+              domain = '.' + domain;
+            }
+        
+            // Caso a expiração seja 'Session', significa que o cookie não tem expiração, então adicionamos uma data de expiração válida
+            if (expiration === 'Session') {
+              expiration = new Date(Date.now() + 86400 * 1000); // Define a expiração para 1 dia após a criação
+            } else {
+              expiration = new Date(expiration);
+            }
+        
+            // Converte para timestamp Unix
+            expiration = Math.trunc(expiration.getTime() / 1000);
+        
+            // Exibe no formato Netscape
+            console.log([domain, 'TRUE', path, httpOnly, expiration, name, value].join('\t'));
+          }
         }
+
         
         // Chama a função para coletar os cookies
         getYouTubeCookies();
