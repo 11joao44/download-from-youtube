@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { spawn } from "child_process";
-import axios = from "axios";
+import axios from "axios";
 import path from "path";
 import fs from "fs";
 import os from "os";
