@@ -11,6 +11,18 @@ interface DownloadQuery {
   format?: string;
 }
 
+interface Cookie {
+  name: string;
+  value: string;
+  domain: string;
+  expires: string;
+  path: string;
+  secure?: boolean;
+  httpOnly?: boolean;
+  sameSite?: string;
+  partitioned?: boolean;
+}
+
 export default async function downloadRoutes(
   fastify: FastifyInstance
 ): Promise<void> {
@@ -50,6 +62,49 @@ export default async function downloadRoutes(
           "https://www.youtube.com/",
         ];
 
+        function convertToNetscapeFormat(cookies: string[]): string {
+          const result: string[] = ["# Netscape HTTP Cookie File", "# This is a generated file! Do not edit."];
+        
+          cookies.forEach(cookieStr => {
+            const cookie: Cookie = parseCookie(cookieStr);
+            const expiresTimestamp = new Date(cookie.expires).getTime() / 1000; // Convert to Unix timestamp
+        
+            const secure = cookie.secure ? "TRUE" : "FALSE";
+            const httpOnly = cookie.httpOnly ? "TRUE" : "FALSE";
+            const sameSite = cookie.sameSite ? cookie.sameSite : "NONE";
+            
+            result.push(
+              `${cookie.domain}\tTRUE\t${cookie.path}\t${secure}\t${expiresTimestamp}\t${cookie.name}\t${cookie.value}`
+            );
+          });
+        
+          return result.join("\n");
+        }
+        
+        function parseCookie(cookieStr: string): Cookie {
+          const parts = cookieStr.split(';');
+          const cookieObj: { [key: string]: string } = {};
+        
+          parts.forEach(part => {
+            const [key, value] = part.trim().split('=');
+            cookieObj[key] = value;
+          });
+        
+          const cookie: Cookie = {
+            name: cookieObj['GPS'] || cookieObj['YSC'] || cookieObj['__Secure-ROLLOUT_TOKEN'] || cookieObj['VISITOR_INFO1_LIVE'] || cookieObj['VISITOR_PRIVACY_METADATA'],
+            value: cookieObj['GPS'] || cookieObj['YSC'] || cookieObj['__Secure-ROLLOUT_TOKEN'] || cookieObj['VISITOR_INFO1_LIVE'] || cookieObj['VISITOR_PRIVACY_METADATA'],
+            domain: cookieObj['Domain'] || '',
+            expires: cookieObj['Expires'] || new Date().toString(),
+            path: cookieObj['Path'] || '/',
+            secure: cookieObj['Secure'] === 'Secure',
+            httpOnly: cookieObj['HttpOnly'] === 'HttpOnly',
+            sameSite: cookieObj['SameSite'] || 'none',
+            partitioned: cookieObj['Partitioned'] === 'Partitioned',
+          };
+        
+          return cookie;
+        }
+
         async function getYouTubeCookies() {
           try {
             const response = await axios.get('https://www.youtube.com');
@@ -63,6 +118,7 @@ export default async function downloadRoutes(
             }
             
             const netscapeCookies = convertToNetscapeFormat(cookies);
+            console.log(netscapeCookies);
         
             // Salvar os cookies no formato correto
             const cookieFilePath = '/tmp/cookies.txt';
@@ -77,59 +133,6 @@ export default async function downloadRoutes(
             console.error('Erro ao coletar os cookies:', error);
           }
         }
-        
-        function convertToNetscapeFormat(content: string[]): string  {
-          const cookies = content.split('\n');
-        
-          console.log('# Netscape HTTP Cookie File');
-          
-          for (const cookie of cookies) {
-            // A primeira parte do cookie será sempre no formato "name=value"
-            const parts = cookie.split(';');
-            
-            let [name, value] = parts[0].split('=');
-            if (!name) continue;
-        
-            let domain = '';
-            let path = '/';
-            let expiration = 'Session'; // Caso não tenha expirado, usamos "Session"
-            let httpOnly = 'FALSE';
-            
-            // Para cada parte restante (atributos como Domain, Path, Expires, etc.)
-            parts.forEach((part: string) => {
-              if (part.trim().startsWith('Domain=')) {
-                domain = part.split('=')[1].trim();
-              } else if (part.trim().startsWith('Path=')) {
-                path = part.split('=')[1].trim();
-              } else if (part.trim().startsWith('Expires=')) {
-                expiration = part.split('=')[1].trim();
-              } else if (part.trim().startsWith('HttpOnly')) {
-                httpOnly = 'TRUE';
-              }
-            });
-        
-            // Garantir que o domínio começa com um ponto
-            if (domain.charAt(0) !== '.') {
-              domain = '.' + domain;
-            }
-        
-            // Caso a expiração seja 'Session', significa que o cookie não tem expiração, então adicionamos uma data de expiração válida
-            if (expiration === 'Session') {
-              expiration = new Date(Date.now() + 86400 * 1000); // Define a expiração para 1 dia após a criação
-            } else {
-              expiration = new Date(expiration);
-            }
-        
-            // Converte para timestamp Unix
-            expiration = Math.trunc(expiration.getTime() / 1000);
-        
-            // Exibe no formato Netscape
-            console.log([domain, 'TRUE', path, httpOnly, expiration, name, value].join('\t'));
-          }
-        }
-
-        
-        // Chama a função para coletar os cookies
         getYouTubeCookies();
 
         // Se a variável de ambiente YOUTUBE_COOKIES estiver definida, use os cookies
