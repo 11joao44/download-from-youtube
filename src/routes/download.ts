@@ -62,16 +62,41 @@ export default async function downloadRoutes(
               throw new Error('Cookies não encontrados no cabeçalho da resposta');
             }
             
-            // Converte os cookies para o formato de variáveis de ambiente
-            const cookieString = cookies.join('; ');
+            const netscapeCookies = convertToNetscapeFormat(cookies);
+        
+            // Salvar os cookies no formato correto
+            const cookieFilePath = '/tmp/cookies.txt';
+            fs.writeFileSync(cookieFilePath, netscapeCookies, 'utf8');
+            console.log(`Cookies salvos no formato Netscape em: ${cookieFilePath}`);
             
-            // Definir a variável de ambiente YOUTUBE_COOKIES com os cookies coletados
-            process.env.YOUTUBE_COOKIES = cookieString;
-            
+            // Definir a variável de ambiente YOUTUBE_COOKIES com o caminho do arquivo de cookies
+            process.env.YOUTUBE_COOKIES = cookieFilePath;
             console.log('Cookies coletados e definidos na variável de ambiente YOUTUBE_COOKIES');
+            
           } catch (error) {
             console.error('Erro ao coletar os cookies:', error);
           }
+        }
+        
+        // Função para converter cookies para o formato Netscape
+        function convertToNetscapeFormat(cookies) {
+          let netscapeFormat = "# Netscape HTTP Cookie File\n# This is a generated file! Do not edit.\n";
+          
+          cookies.forEach(cookie => {
+            const cookieParts = cookie.split(';');
+            const cookieDetails = cookieParts[0].split('=');
+            
+            // Definindo a estrutura: domain, path, expiry, name, value
+            const domain = cookieDetails[0].replace(/^[.]+/, ''); // Remove o ponto inicial do domínio
+            const path = '/'; // Caminho padrão
+            const expiry = Date.now() + 365 * 24 * 60 * 60 * 1000; // Definindo uma expiração para 1 ano
+            const name = cookieDetails[0];
+            const value = cookieDetails[1] || '';
+        
+            netscapeFormat += `${domain}\tTRUE\t${path}\tTRUE\t${expiry}\t${name}\t${value}\n`;
+          });
+        
+          return netscapeFormat;
         }
         
         // Chama a função para coletar os cookies
