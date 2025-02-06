@@ -141,6 +141,7 @@ export default async function downloadRoutes(
           // Cria um arquivo temporário para os cookies
           cookieFilePath = path.join(os.tmpdir(), `cookies_${Date.now()}.txt`);
           try {
+            console.log('Arquivo Netscape :', process.env.YOUTUBE_COOKIES); 
             fs.writeFileSync(cookieFilePath, process.env.YOUTUBE_COOKIES, "utf8");
             console.log(`Arquivo de cookies criado em: ${cookieFilePath}`);
             args.push("--cookies", cookieFilePath);
