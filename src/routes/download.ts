@@ -1,5 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { spawn } from "child_process";
+onst axios = require('axios');
 import path from "path";
 import fs from "fs";
 import os from "os";
@@ -48,6 +49,28 @@ export default async function downloadRoutes(
           "--referer",
           "https://www.youtube.com/",
         ];
+
+        async function getYouTubeCookies() {
+          try {
+            const response = await axios.get('https://www.youtube.com');
+            
+            // Os cookies estão no cabeçalho 'set-cookie' da resposta
+            const cookies = response.headers['set-cookie'];
+            
+            // Converte os cookies para o formato de variáveis de ambiente
+            const cookieString = cookies.join('; ');
+        
+            // Definir a variável de ambiente YOUTUBE_COOKIES com os cookies coletados
+            process.env.YOUTUBE_COOKIES = cookieString;
+        
+            console.log('Cookies coletados e definidos na variável de ambiente YOUTUBE_COOKIES');
+          } catch (error) {
+            console.error('Erro ao coletar os cookies:', error);
+          }
+        }
+        
+        // Chama a função para coletar os cookies
+        getYouTubeCookies();
 
         // Se a variável de ambiente YOUTUBE_COOKIES estiver definida, use os cookies
         let cookieFilePath: string | null = null;
