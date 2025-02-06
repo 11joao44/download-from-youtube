@@ -57,12 +57,17 @@ export default async function downloadRoutes(
             // Os cookies estão no cabeçalho 'set-cookie' da resposta
             const cookies = response.headers['set-cookie'];
             
+            // Verifica se os cookies estão definidos
+            if (!cookies) {
+              throw new Error('Cookies não encontrados no cabeçalho da resposta');
+            }
+            
             // Converte os cookies para o formato de variáveis de ambiente
             const cookieString = cookies.join('; ');
-        
+            
             // Definir a variável de ambiente YOUTUBE_COOKIES com os cookies coletados
             process.env.YOUTUBE_COOKIES = cookieString;
-        
+            
             console.log('Cookies coletados e definidos na variável de ambiente YOUTUBE_COOKIES');
           } catch (error) {
             console.error('Erro ao coletar os cookies:', error);
